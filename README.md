@@ -35,4 +35,13 @@ sudo ./darchpi-menu.sh
 
 The image uses a Raspberry Pi-compatible FAT `/boot` partition and ext4 root partition. On first boot it updates `pacman`, installs IWD, and installs Nipe from its upstream repository.
 
+It also installs ARM-compatible WireGuard WARP tooling. To create and enable a WARP profile on the Pi, run:
+
+```bash
+sudo darchpi-enable-warp
+sudo systemctl start wg-quick@wgcf-profile
+```
+
+WARP registration is intentionally performed on the device so credentials are not embedded in the image.
+
 BlackArch is not enabled: its official repository does not provide packages for Arch Linux ARM architectures, and adding it would make `pacman` fail with unavailable-package errors. The other 21 boards need their own boot partition and bootloader layouts before they can safely be built as bootable images.

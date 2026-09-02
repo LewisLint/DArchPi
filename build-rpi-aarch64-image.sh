@@ -73,8 +73,23 @@ cat > "$mount_dir/root/darchpi-first-boot.sh" <<'FIRSTBOOT'
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-pacman -Syu --noconfirm iwd git perl cpanminus curl
+pacman -Syu --noconfirm iwd git perl cpanminus curl go wireguard-tools
 systemctl enable iwd.service
+
+GOBIN=/usr/local/bin go install github.com/ViRb3/wgcf/cmd/wgcf@latest
+install -d -m 700 /etc/wireguard
+cat > /usr/local/sbin/darchpi-enable-warp <<'WARP'
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+cd /etc/wireguard
+wgcf register
+wgcf generate
+install -m 600 wgcf-profile.conf /etc/wireguard/wgcf-profile.conf
+systemctl enable wg-quick@wgcf-profile.service
+printf 'WARP configuration created. Start it with: systemctl start wg-quick@wgcf-profile\n'
+WARP
+chmod 700 /usr/local/sbin/darchpi-enable-warp
 
 cd /root
 curl -O https://blackarch.org/strap.sh
