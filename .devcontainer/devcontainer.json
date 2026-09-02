@@ -1,0 +1,16 @@
+{
+    "name": "DArchPi Arch Linux",
+    "build": {
+        "dockerfile": "Dockerfile",
+        "context": ".."
+    },
+    "remoteUser": "vscode",
+    "containerUser": "vscode",
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-vscode.shellcheck"
+            ]
+        }
+    }
+}

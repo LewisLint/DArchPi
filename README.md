@@ -1,1 +1,38 @@
 # DArchPi
+
+## Menu dispatcher
+
+Run the menu with:
+
+```bash
+./darchpi-menu.sh
+```
+
+The dispatcher presents the two supported Raspberry Pi options and builds the matching image:
+
+```text
+scripts/option-13.sh  # Raspberry Pi ARMv7
+scripts/option-18.sh  # Raspberry Pi 3/4 AArch64
+```
+
+Each target script should be executable:
+
+```bash
+chmod +x scripts/option-13.sh scripts/option-18.sh
+```
+
+## Arch Linux Codespace
+
+This repository includes an Arch Linux devcontainer. Rebuild the Codespace container after pulling the repository configuration to use it. The container includes the image-building tools and a passwordless `vscode` sudo user.
+
+## Raspberry Pi AArch64 image
+
+The menu builds either `ArchLinuxARM-rpi-armv7.img.xz` or `ArchLinuxARM-rpi-aarch64.img.xz`. The builder requires root privileges and host tools including `dosfstools`, `util-linux`, and `xz`:
+
+```bash
+sudo ./darchpi-menu.sh
+```
+
+The image uses a Raspberry Pi-compatible FAT `/boot` partition and ext4 root partition. On first boot it updates `pacman`, installs IWD, and installs Nipe from its upstream repository.
+
+BlackArch is not enabled: its official repository does not provide packages for Arch Linux ARM architectures, and adding it would make `pacman` fail with unavailable-package errors. The other 21 boards need their own boot partition and bootloader layouts before they can safely be built as bootable images.
