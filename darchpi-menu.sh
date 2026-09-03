@@ -75,6 +75,7 @@ fi
 
 if ask_yes_no BlackArch; then
     features+=(blackarch)
+    printf 'BlackArch will be installed.\nKeep in mind that this is still in testing, so you may come accross unprecidented issues.\nJust a friendly warning!\n'
 fi
 
 if [[ "${#features[@]}" -eq 0 ]]; then
