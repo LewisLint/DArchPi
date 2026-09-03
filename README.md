@@ -8,7 +8,7 @@ Run the menu with:
 ./darchpi-menu.sh
 ```
 
-The dispatcher presents the two supported Raspberry Pi options and builds the matching image:
+The dispatcher presents the two supported Raspberry Pi options, then asks separately whether to install Nipe, WARP, Tor, and the BlackArch repositories:
 
 ```text
 scripts/option-13.sh  # Raspberry Pi ARMv7
@@ -42,6 +42,6 @@ sudo darchpi-enable-warp
 sudo systemctl start wg-quick@wgcf-profile
 ```
 
-WARP registration is intentionally performed on the device so credentials are not embedded in the image.
+WARP registration is intentionally performed on the device so credentials are not embedded in the image. Selecting WARP creates the `darchpi-enable-warp` helper. Selecting BlackArch downloads and runs its `strap.sh` setup script; selecting Tor installs it from the Arch repositories.
 
-BlackArch is not enabled: its official repository does not provide packages for Arch Linux ARM architectures, and adding it would make `pacman` fail with unavailable-package errors. The other 21 boards need their own boot partition and bootloader layouts before they can safely be built as bootable images.
+BlackArch support is added but still in testing. Its official repository may not provide packages for Arch Linux ARM architectures, so image provisioning or later `pacman` operations may fail. The other 21 boards need their own boot partition and bootloader layouts before they can safely be built as bootable images.
