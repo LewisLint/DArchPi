@@ -161,9 +161,38 @@ RemainAfterExit=yes
 WantedBy=multi-user.target
 SERVICE
 
+cat > "$mount_dir/usr/local/sbin/darchpi-expand-filesystem" <<'EXPAND'
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+root_device=$(findmnt --noheadings --output SOURCE /)
+resize2fs "$root_device"
+systemctl disable darchpi-expand-filesystem.service
+rm -f /usr/local/sbin/darchpi-expand-filesystem /etc/systemd/system/darchpi-expand-filesystem.service
+systemctl daemon-reload
+EXPAND
+chmod 700 "$mount_dir/usr/local/sbin/darchpi-expand-filesystem"
+
+cat > "$mount_dir/etc/systemd/system/darchpi-expand-filesystem.service" <<'SERVICE'
+[Unit]
+Description=Expand the root filesystem to fill its partition
+After=local-fs.target
+ConditionPathExists=/usr/local/sbin/darchpi-expand-filesystem
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/darchpi-expand-filesystem
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
+SERVICE
+
 mkdir -p "$mount_dir/etc/systemd/system/multi-user.target.wants"
 ln -s ../darchpi-first-boot.service \
     "$mount_dir/etc/systemd/system/multi-user.target.wants/darchpi-first-boot.service"
+ln -s ../darchpi-expand-filesystem.service \
+    "$mount_dir/etc/systemd/system/multi-user.target.wants/darchpi-expand-filesystem.service"
 
 sync
 umount "$mount_dir/boot"
