@@ -13,6 +13,9 @@ features=${3:-all}
 if [[ "$features" == all ]]; then
     features=nipe,warp,tor,blackarch
 fi
+if [[ ",$features," == *,nipe,* && ",$features," != *,tor,* ]]; then
+    features+=,tor
+fi
 [[ "$features" =~ ^(nipe|warp|tor|blackarch)(,(nipe|warp|tor|blackarch))*$ ]] || {
     printf 'Unsupported feature set: %s\n' "$features" >&2
     exit 1

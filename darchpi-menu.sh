@@ -21,6 +21,25 @@ download_urls=(
     "http://os.archlinuxarm.org/os/ArchLinuxARM-rpi-aarch64-latest.tar.gz"
 )
 
+ask_yes_no() {
+    local prompt=$1
+    local answer
+
+    while true; do
+        printf '\nInstall %s? (y/N): ' "$prompt"
+        if ! read -r answer; then
+            printf '\nInput ended before a valid answer was entered.\n' >&2
+            return 2
+        fi
+
+        case "$answer" in
+            [Yy]) return 0 ;;
+            [Nn] | '') return 1 ;;
+            *) printf 'Invalid answer: %s. Please enter y or n.\n' "$answer" >&2 ;;
+        esac
+    done
+}
+
 printf 'Choose an option:\n\n'
 for index in "${!options[@]}"; do
     printf '%2d) %s\n' "$((index + 1))" "${options[index]}"
@@ -37,13 +56,26 @@ fi
 index=$((selection - 1))
 
 features=()
-for feature in Nipe WARP Tor BlackArch; do
-    printf '\nInstall %s? (y/N): ' "$feature"
-    read -r feature_selection
-    if [[ "$feature_selection" =~ ^[Yy]$ ]]; then
+if ask_yes_no Nipe; then
+    features+=(nipe tor)
+    printf 'Nipe requires Tor. Tor will be installed automatically.\n'
+fi
+
+for feature in WARP; do
+    if ask_yes_no "$feature"; then
         features+=("${feature,,}")
     fi
 done
+
+if [[ ! " ${features[*]} " == *' nipe '* ]]; then
+    if ask_yes_no Tor; then
+        features+=(tor)
+    fi
+fi
+
+if ask_yes_no BlackArch; then
+    features+=(blackarch)
+fi
 
 if [[ "${#features[@]}" -eq 0 ]]; then
     printf 'Select at least one feature.\n' >&2
