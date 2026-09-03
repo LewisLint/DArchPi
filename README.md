@@ -22,7 +22,7 @@ The menu builds either `ArchLinuxARM-rpi-armv7.img.xz` or `ArchLinuxARM-rpi-aarc
 sudo ./darchpi-menu.sh
 ```
 
-The image uses a Raspberry Pi-compatible FAT `/boot` partition and ext4 root partition. On first boot it expands the root filesystem to fill its partition, updates `pacman`, installs IWD, and installs Nipe from its upstream repository.
+On first boot, the image prompts on the Pi console for a Wi-Fi SSID and password before running `pacman`. It writes an iwd connection profile, connects to the network, and waits for internet access. Press Enter at the SSID prompt to use Ethernet instead. The Wi-Fi password is written to the live system, so only use it with an image you trust.
 
 It also installs ARM-compatible WireGuard WARP tooling. To create and enable a WARP profile on the Pi, run:
 

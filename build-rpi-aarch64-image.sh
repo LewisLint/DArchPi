@@ -37,6 +37,7 @@ trap cleanup EXIT
 
 [[ $EUID -eq 0 ]] || { printf 'Run this builder with sudo.\n' >&2; exit 1; }
 [[ -f "$archive" ]] || { printf 'Archive not found: %s\n' "$archive" >&2; exit 1; }
+
 for command in dd losetup mkfs.vfat mkfs.ext4 mount mountpoint sfdisk tar udevadm xz; do
     if ! command -v "$command" >/dev/null; then
         case "$command" in
@@ -83,6 +84,40 @@ printf '%s\n' "$features" > "$mount_dir/etc/darchpi-features"
 cat > "$mount_dir/root/darchpi-first-boot.sh" <<'FIRSTBOOT'
 #!/usr/bin/env bash
 set -Eeuo pipefail
+
+printf 'First boot network setup\n'
+printf 'Wi-Fi network name (SSID), or press Enter to use Ethernet: '
+read -r wifi_ssid
+
+if [[ -n "$wifi_ssid" ]]; then
+    if [[ "$wifi_ssid" == */* || "$wifi_ssid" == '..' ]]; then
+        printf 'Invalid Wi-Fi network name.\n' >&2
+        exit 1
+    fi
+
+    read -r -s -p 'Wi-Fi password: ' wifi_password
+    printf '\n'
+    if [[ -z "$wifi_password" ]]; then
+        printf 'Wi-Fi password cannot be empty.\n' >&2
+        exit 1
+    fi
+    if ! command -v iwctl >/dev/null; then
+        printf 'iwctl is unavailable. Connect Ethernet or install iwd, then restart this service.\n' >&2
+        exit 1
+    fi
+
+    install -d -m 700 /var/lib/iwd
+    umask 077
+    printf '%s\n' '[Security]' "Passphrase=$wifi_password" > "/var/lib/iwd/$wifi_ssid.psk"
+    umask 022
+    systemctl restart iwd.service
+    iwctl station wlan0 connect "$wifi_ssid"
+fi
+
+printf 'Waiting for network access before installing packages...\n'
+until (exec 3<>/dev/tcp/archlinux.org/443) 2>/dev/null; do
+    sleep 5
+done
 
 IFS=, read -r -a selected_features < /etc/darchpi-features
 has_feature() {
@@ -131,6 +166,7 @@ if has_feature blackarch; then
     curl --fail --location --output strap.sh https://blackarch.org/strap.sh
     chmod 700 strap.sh
     ./strap.sh
+    pacman -S --needed --noconfirm blackarch-officials
 fi
 
 if has_feature nipe && [[ ! -d /opt/nipe ]]; then
@@ -148,13 +184,19 @@ chmod 700 "$mount_dir/root/darchpi-first-boot.sh"
 cat > "$mount_dir/etc/systemd/system/darchpi-first-boot.service" <<'SERVICE'
 [Unit]
 Description=Install DArchPi networking and Nipe packages
-After=network-online.target
-Wants=network-online.target
+After=local-fs.target iwd.service
+Wants=iwd.service
 ConditionPathExists=/root/darchpi-first-boot.sh
 
 [Service]
 Type=oneshot
 ExecStart=/root/darchpi-first-boot.sh
+StandardInput=tty
+StandardOutput=tty
+TTYPath=/dev/tty1
+TTYReset=yes
+TTYVHangup=yes
+TTYVTDisallocate=yes
 RemainAfterExit=yes
 
 [Install]
