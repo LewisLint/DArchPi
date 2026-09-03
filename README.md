@@ -37,4 +37,4 @@ WARP registration is intentionally performed on the device so credentials are no
 
 BlackArch will be installed only when selected. Keep in mind that this is still in testing, so you may come across unprecedented issues. Just a friendly warning!
 
-Its official repository may not provide packages for Arch Linux ARM architectures, so image provisioning or later `pacman` operations may fail. The other 21 boards need their own boot partition and bootloader layouts before they can safely be built as bootable images.
+BlackArch supports Arch Linux ARM and AArch64, but this DArchPi integration has not been tested yet. Image provisioning or later `pacman` operations may still fail unexpectedly. The other 21 boards need their own boot partition and bootloader layouts before they can safely be built as bootable images.
