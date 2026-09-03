@@ -33,4 +33,8 @@ sudo systemctl start wg-quick@wgcf-profile
 
 WARP registration is intentionally performed on the device so credentials are not embedded in the image. Selecting WARP creates the `darchpi-enable-warp` helper. Selecting Tor installs it from the Arch repositories; selecting Nipe also installs Tor because it is a Nipe dependency. Selecting BlackArch downloads and runs its `strap.sh` setup script.
 
-BlackArch support is added but still in testing. Its official repository may not provide packages for Arch Linux ARM architectures, so image provisioning or later `pacman` operations may fail. The other 21 boards need their own boot partition and bootloader layouts before they can safely be built as bootable images.
+## Warnings
+
+BlackArch will be installed only when selected. Keep in mind that this is still in testing, so you may come across unprecedented issues. Just a friendly warning!
+
+Its official repository may not provide packages for Arch Linux ARM architectures, so image provisioning or later `pacman` operations may fail. The other 21 boards need their own boot partition and bootloader layouts before they can safely be built as bootable images.
