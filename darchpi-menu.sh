@@ -36,6 +36,22 @@ fi
 
 index=$((selection - 1))
 
+features=()
+for feature in Nipe WARP Tor BlackArch; do
+    printf '\nInstall %s? (y/N): ' "$feature"
+    read -r feature_selection
+    if [[ "$feature_selection" =~ ^[Yy]$ ]]; then
+        features+=("${feature,,}")
+    fi
+done
+
+if [[ "${#features[@]}" -eq 0 ]]; then
+    printf 'Select at least one feature.\n' >&2
+    exit 1
+fi
+
+feature_list=$(IFS=,; printf '%s' "${features[*]}")
+
 if ! command -v curl >/dev/null; then
     printf 'curl is required. Install it with: sudo pacman -S curl\n' >&2
     exit 1
@@ -49,4 +65,4 @@ if ! curl -L --fail --retry 3 --output "$archive" "${download_urls[index]}"; the
     exit 1
 fi
 
-"$SCRIPT_DIR/build-rpi-image.sh" ArchLinuxARM-.tar.gz "${image_names[index]}"
+"$SCRIPT_DIR/build-rpi-image.sh" ArchLinuxARM-.tar.gz "${image_names[index]}" "$feature_list"

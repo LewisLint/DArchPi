@@ -2,13 +2,21 @@
 
 set -Eeuo pipefail
 
-if [[ $# -ne 2 ]]; then
-    printf 'Usage: %s ROOTFS_ARCHIVE IMAGE_NAME\n' "$0" >&2
+if [[ $# -lt 2 || $# -gt 3 ]]; then
+    printf 'Usage: %s ROOTFS_ARCHIVE IMAGE_NAME [FEATURES]\n' "$0" >&2
     exit 2
 fi
 
 archive=$1
 image=$2
+features=${3:-all}
+if [[ "$features" == all ]]; then
+    features=nipe,warp,tor,blackarch
+fi
+[[ "$features" =~ ^(nipe|warp|tor|blackarch)(,(nipe|warp|tor|blackarch))*$ ]] || {
+    printf 'Unsupported feature set: %s\n' "$features" >&2
+    exit 1
+}
 compressed_image="$image.xz"
 work_dir=$(mktemp -d)
 mount_dir="$work_dir/root"
@@ -26,7 +34,6 @@ trap cleanup EXIT
 
 [[ $EUID -eq 0 ]] || { printf 'Run this builder with sudo.\n' >&2; exit 1; }
 [[ -f "$archive" ]] || { printf 'Archive not found: %s\n' "$archive" >&2; exit 1; }
-
 for command in dd losetup mkfs.vfat mkfs.ext4 mount mountpoint sfdisk tar udevadm xz; do
     if ! command -v "$command" >/dev/null; then
         case "$command" in
@@ -69,16 +76,40 @@ LABEL=BOOT  /boot  vfat  defaults           0 2
 FSTAB
 
 mkdir -p "$mount_dir/root"
+printf '%s\n' "$features" > "$mount_dir/etc/darchpi-features"
 cat > "$mount_dir/root/darchpi-first-boot.sh" <<'FIRSTBOOT'
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-pacman -Syu --noconfirm iwd git perl cpanminus curl go wireguard-tools
+IFS=, read -r -a selected_features < /etc/darchpi-features
+has_feature() {
+    local feature=$1
+    for selected_feature in "${selected_features[@]}"; do
+        [[ "$selected_feature" == "$feature" ]] && return 0
+    done
+    return 1
+}
+
+packages=(iwd)
+if has_feature nipe; then
+    packages+=(git perl cpanminus)
+fi
+if has_feature warp; then
+    packages+=(git go wireguard-tools)
+fi
+if has_feature tor; then
+    packages+=(tor)
+fi
+if has_feature blackarch; then
+    packages+=(curl)
+fi
+pacman -Syu --noconfirm "${packages[@]}"
 systemctl enable iwd.service
 
-GOBIN=/usr/local/bin go install github.com/ViRb3/wgcf/cmd/wgcf@latest
-install -d -m 700 /etc/wireguard
-cat > /usr/local/sbin/darchpi-enable-warp <<'WARP'
+if has_feature warp; then
+    GOBIN=/usr/local/bin go install github.com/ViRb3/wgcf/cmd/wgcf@latest
+    install -d -m 700 /etc/wireguard
+    cat > /usr/local/sbin/darchpi-enable-warp <<'WARP'
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
@@ -89,12 +120,17 @@ install -m 600 wgcf-profile.conf /etc/wireguard/wgcf-profile.conf
 systemctl enable wg-quick@wgcf-profile.service
 printf 'WARP configuration created. Start it with: systemctl start wg-quick@wgcf-profile\n'
 WARP
-chmod 700 /usr/local/sbin/darchpi-enable-warp
+    chmod 700 /usr/local/sbin/darchpi-enable-warp
+fi
 
-cd /root
-curl -O https://blackarch.org/strap.sh
+if has_feature blackarch; then
+    cd /root
+    curl --fail --location --output strap.sh https://blackarch.org/strap.sh
+    chmod 700 strap.sh
+    ./strap.sh
+fi
 
-if [[ ! -d /opt/nipe ]]; then
+if has_feature nipe && [[ ! -d /opt/nipe ]]; then
     git clone https://github.com/htrgouvea/nipe.git /opt/nipe
     cd /opt/nipe
     cpanm --installdeps .
