@@ -41,7 +41,7 @@ Please keep in mind:
 * **BlackArch integration** is entirely untested on ARM architectures and may break `pacman` or image provisioning.
 * **Limited board support:** Presently, *only two* Raspberry Pi boards, *ARMv7l* and *ARMv8*, are supported. The *other 21 Arch Linux ARM-supported boards require unique bootloader configurations* and are **not** currently a priority.
 
-## Future Roadmap
+## Future Aims and Plans
 ***(Top Priorities First)***
 
 Since this is a solo project, features will be added as time permits. Priorities are ordered from highest to lowest:
