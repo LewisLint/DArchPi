@@ -30,24 +30,31 @@ sudo systemctl start wg-quick@wgcf-profile
 WARP registration is intentionally performed on the device so credentials are not embedded in the image. Selecting WARP creates the `darchpi-enable-warp` helper. Selecting Tor installs it from the Arch repositories; selecting Nipe also installs Tor because it is a Nipe dependency. Selecting BlackArch downloads and runs its `strap.sh` setup script.
 
 ## Warnings
+**Project Phase: Alpha / Untested**
+
+This project has been sitting unmaintained and untested for about a month. It is maintained by a **solo developer** who works on this in their free time, so updates and bug fixes may be slow. 
 
 BlackArch will be installed only when selected. Keep in mind that this is still in testing, so you may come across unprecedented issues. Just a friendly warning!
 
-BlackArch supports Arch Linux ARM and AArch64, but this DArchPi integration has not been tested yet. Image provisioning or later `pacman` operations may still fail unexpectedly. The other 21 boards need their own boot partition and bootloader layouts before they can safely be built as bootable images; in the future when I have more time, I may add these, but they are very low priority in my personal opinion. 
+Please keep in mind:
+* **Use at your own risk:** This project is not yet in active testing and features may fail completely.
+* **BlackArch integration** is entirely untested on ARM architectures and may break `pacman` or image provisioning.
+* **Limited board support:** Presently, *only two* Raspberry Pi boards, *ARMv7l* and *ARMv8*, are supported. The *other 21 Arch Linux ARM-supported boards require unique bootloader configurations* and are **not** currently a priority.
 
-
-## Future Aims 
+## Future Roadmap
 ***(Top Priorities First)***
-1.  Add support for running this script on Arch Linux, Fedora, and Debian/Ubuntu PCs to format MircoSD cards easier
-2.  Add support for running this script on a Raspberry Pi itself
-3.  Add a custom `.zshrc` (which can be found at `https://github.com/lewislint/.dots`)
-4.  Add a custom `.vimrc`
-5.  Add an optional WM or DE choice to automatically install one of your choice
-6.  Add support for the 21 other boards supporte by Arch Linux ARM
 
-## Plans for some future plans
+Since this is a solo project, features will be added as time permits. Priorities are ordered from highest to lowest:
+
+1. **Host Compatibility:** Add package manager checks for *Arch Linux (Pacman)* and *Fedora (DNF)* so MicroSD cards can be formatted from more host operating systems.
+2. **Native Execution:** Add support for running the build script *directly* on a Raspberry Pi board.
+3. **Environment Customization:** Build in optional steps to impliment custom configuration files *(like my `.zshrc` and `.vimrc` dotfiles).*
+4. **Desktop Environments:** Add options to automatically install a *WM* or *DE* during the image creation process.
+5. **Board Expansion:** *Gradually* introduce compatability for the *other 21 boards* supported by Arch Linux ARM (ALARM).
+
+## Plans for Future Aims
 ***(Top Priorities First)***
 
 *Arch Linux Support* 
-In the future I will add checks for Arch Linux and DNF packages instead of just checking APT, as it does now. It will also autodetect if the DNF, APT, or Pacman binaries exist on your system to install those packages/give you installation instructions
+In the future I will add checks for Arch Linux and DNF packages instead of just checking APT, as it does now. It will also autodetect if the DNF, APT, or Pacman binaries exist on your system to install those packages/give you installation instructions.
 
