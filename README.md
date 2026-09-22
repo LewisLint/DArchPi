@@ -51,10 +51,3 @@ Since this is a solo project, features will be added as time permits. Priorities
 3. **Environment Customization:** Build in optional steps to impliment custom configuration files *(like my `.zshrc` and `.vimrc` dotfiles).*
 4. **Desktop Environments:** Add options to automatically install a *WM* or *DE* during the image creation process.
 5. **Board Expansion:** *Gradually* introduce compatability for the *other 21 boards* supported by Arch Linux ARM (ALARM).
-
-## Plans for Future Aims
-***(Top Priorities First)***
-
-*Arch Linux Support* 
-In the future I will add checks for Arch Linux and DNF packages instead of just checking APT, as it does now. It will also autodetect if the DNF, APT, or Pacman binaries exist on your system to install those packages/give you installation instructions.
-
